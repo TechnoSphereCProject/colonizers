@@ -1,0 +1,14 @@
+#ifndef GAMESTAGE_H
+#define GAMESTAGE_H
+
+#include <string>
+
+enum class GameStage {PLAYERS_REGISTRATION, INFRASTRUCTURES_REGISTRATION, PUT_INITIAL_INFRASTRUCTURES,
+    STAGE1_DICE, STAGE1_DROP_RESOURCES, STAGE1_MOVE_ROBBER, STAGE1_ROBBING, STAGE2, STAGE3, FINAL_STAGE};
+
+namespace EnumInfo
+{
+    std::string game_stage_str(GameStage);
+}
+
+#endif // GAMESTAGE_H
