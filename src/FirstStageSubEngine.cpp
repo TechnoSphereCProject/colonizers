@@ -3,6 +3,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+
+using Logger::log;
 using std::invalid_argument;
 
 GameStage FirstStageSubEngine::make_dice(size_t dice)
@@ -13,9 +15,11 @@ GameStage FirstStageSubEngine::make_dice(size_t dice)
         ss << " your dice is " << dice;
         throw invalid_argument(ss.str());
     } else if (dice == ROBBERS_MOVE) {
+        log("robbers dice: starting robbing procedure");
         init_drop_list();
         return _drop_list.empty() ? GameStage::STAGE1_MOVE_ROBBER : GameStage::STAGE1_DROP_RESOURCES;
     } else {
+        log("regular dice: dealing resources");
         deal_resources(dice);
         return GameStage::STAGE2;
     }
@@ -37,6 +41,8 @@ GameStage FirstStageSubEngine::drop_resource(const Player &player, Resource res)
     _drop_list[&player] -= SINGLE_DROP;
     _game.field().bank().add(res, SINGLE_DROP);
 
+    log("player " + player.name() + " performed a single drop");
+
     for (auto it = _drop_list.cbegin(); it != _drop_list.cend(); it++) {
         if (it->second != 0) {
             return GameStage::STAGE1_DROP_RESOURCES;
@@ -54,6 +60,8 @@ GameStage FirstStageSubEngine::move_robber(Coord xy) const
     }
 
     _game.field().set_robber(xy);
+
+    log("moving robber to " + xy.str());
 
     auto hex_corners = this->hex_corners(_game.field().robber());
     for (auto i: hex_corners) {
@@ -92,6 +100,8 @@ GameStage FirstStageSubEngine::rob(const Player &player, const Player &victim) c
 
         player.bank().add(rob_res, SINGLE_ROBBERY);
         victim.bank().remove(rob_res, SINGLE_ROBBERY);
+
+        log(player.name() + " robbed " + victim.name());
     }
     return GameStage::STAGE2;
 }
