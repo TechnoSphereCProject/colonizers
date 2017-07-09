@@ -1,9 +1,6 @@
 #include "PreparationEngine.h"
-
 #include <algorithm>
-
-using Logger::log;
-using Logger::warnif;
+#include "format.h"
 using std::invalid_argument;
 
 bool PreparationEngine::player_is_waiting(const string &name) const noexcept
@@ -14,24 +11,17 @@ bool PreparationEngine::player_is_waiting(const string &name) const noexcept
 void PreparationEngine::join_player(const string &player)
 {
     if (player_is_waiting(player)) {
-        throw invalid_argument("cannot join player \"" + player +
-            "\": player with this name is already waiting for a game");
+        throw invalid_argument(fmt::format("cannot join player \"{}\": player with this name is already waiting for a game", player));
     }
     _waiting_queue.push_back(player);
-
-    log("player " + player + " joined the game");
-    warnif(_waiting_queue.size() > NUM_PLAYERS_HIGHER_BOUND, "number of players exceeds game limit");
 }
 
 void PreparationEngine::unjoin_player(const string &player)
 {
     if (!player_is_waiting(player)) {
-        throw invalid_argument("cannot unjoin player \"" + player +
-            "\": player with this name doesn't exist");
+        throw invalid_argument(fmt::format("cannot unjoin player \"{}\": player with this name doesn't exist", player));
     }
     _waiting_queue.remove(player);
-
-    log("player " + player + " left the game");
 }
 
 bool PreparationEngine::has_road(const Player &player, const string &name) const noexcept
@@ -67,45 +57,36 @@ bool PreparationEngine::has_city(const Player &player, const string &name) const
 GameStage PreparationEngine::register_road(Player &player, const string &name)
 {
     if (has_road(player, name)) {
-        throw invalid_argument("cannot register " + player.name() + "'s road \"" + name +
-            "\": player already has such road");
+        throw invalid_argument(fmt::format("cannot register {0}'s road \"{1}\": player already has such road", player.name(), name));
     } else if (player.num_roads() >= MAX_ROADS) {
-        throw invalid_argument("cannot register " + player.name() + "'s road \"" + name +
-            "\": player already has all possible roads");
+        throw invalid_argument(fmt::format("cannot register {0}'s road \"{1}\": player already has all possible roads", player.name(), name));
     }
 
     player.add_road(name);
-    log(player.name() + " registered road " + name);
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
 GameStage PreparationEngine::register_town(Player &player, const string &name)
 {
     if (has_town(player, name)) {
-        throw invalid_argument("cannot register " + player.name() + "'s town \"" + name +
-            "\": player already has such town");
+        throw invalid_argument(fmt::format("cannot register {0}'s town \"{1}\": player already has such town", player.name(), name));
     } else if (player.num_towns() >= MAX_TOWNS) {
-        throw invalid_argument("cannot register " + player.name() + "'s town \"" + name +
-            "\": player already has all possible towns");
+        throw invalid_argument(fmt::format("cannot register {0}'s town \"{1}\": player already has all possible towns", player.name(), name));
     }
 
     player.add_town(name);
-    log(player.name() + " registered town " + name);
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
 GameStage PreparationEngine::register_city(Player &player, const string &name)
 {
     if (has_city(player, name)) {
-        throw invalid_argument("cannot register " + player.name() + "'s city \"" + name +
-            "\": player already has such city");
+        throw invalid_argument(fmt::format("cannot register {0}'s city \"{1}\": player already has such city", player.name(), name));
     } else if (player.num_cities() >= MAX_CITIES) {
-        throw invalid_argument("cannot register " + player.name() + "'s city \"" + name +
-            "\": player already has all possible cities");
+        throw invalid_argument(fmt::format("cannot register {0}'s city \"{1}\": player already has all possible cities", player.name(), name));
     }
 
     player.add_city(name);
-    log(player.name() + " registered city " + name);
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
@@ -119,8 +100,6 @@ void PreparationEngine::fix_players()
         _game.add_player(i);
     }
     _waiting_queue.clear();
-
-    log("registration is over");
 }
 
 void PreparationEngine::init_bank() const
@@ -132,8 +111,6 @@ void PreparationEngine::init_bank() const
     bank.add(Resource::ORE, RESOURCES_INITIAL_COUNT);
     bank.add(Resource::WOOD, RESOURCES_INITIAL_COUNT);
     bank.add(Resource::WOOL, RESOURCES_INITIAL_COUNT);
-
-    log("game bank initialized");
 }
 
 void PreparationEngine::init_classical_field() const
@@ -212,8 +189,6 @@ void PreparationEngine::init_classical_field() const
     field.hex(Coord(2, -2)).set_resource(Resource::ORE);
 
     field.set_robber(Coord(0, 0));
-
-    log("classical field initialized");
 }
 
 bool PreparationEngine::registration_is_over() const noexcept
@@ -240,8 +215,7 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
         }
     }
     if (road_ptr == nullptr) {
-        throw invalid_argument("cannot put initial infrastructure: player " + player.name() +
-            " hasn't road \"" + road + "\"");
+        throw invalid_argument(fmt::format("cannot put initial infrastructure: player {0} hasn't road \"{1}\"", player.name(), road));
     }
     for (size_t i = 0; i < player.num_towns(); i++) {
         if (player.town(i).name() == town) {
@@ -250,8 +224,7 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
         }
     }
     if (town_ptr == nullptr) {
-        throw invalid_argument("cannot put initial infrastructure: player " + player.name() +
-            " hasn't town \"" + town + "\"");
+        throw invalid_argument(fmt::format("cannot put initial infrastructure: player {0} hasn't town \"{1}\"", player.name(), town));
     }
 
     Field &field = _game.field();
@@ -266,8 +239,7 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
     {
         throw invalid_argument("cannot put initial infrastructure: initial infrastructures aren't adjacent");
     } else if (_game.player(_current_player).name() != player.name()) {
-        throw invalid_argument("cannot put initial infrastructure: it is " + _game.player(_current_player).name() +
-            "'s move, not " + player.name() + "'s");
+        throw invalid_argument(fmt::format("cannot put initial infrastructure: it is {0}'s move, not {1}'s", _game.player(_current_player).name(), player.name()));
     } else if (((town_corner == CrossCorner::BOTTOM) &&
             (field.has_locality(town_coord.south_east(), CrossCorner::TOP)
             || field.has_locality(town_coord.south_west(), CrossCorner::TOP)
@@ -301,11 +273,8 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
     field.link_locality(*town_ptr, town_coord, town_corner);
     field.link_road(*road_ptr, road_coord, road_side);
 
-    log("player " + player.name() + " successfully put road " + road + " and town " + town);
-
     if (!_reverse && (_current_player == _game.num_players() - 1)) {
         _reverse = true;
-        log("straight arrangement is over, starting reverse");
     } else if (_reverse) {
         std::vector<Coord> hex_with_resource;
         if (field.has_hex(town_coord) && field.hex(town_coord).has_resource()) {
@@ -330,7 +299,6 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
             Resource rec = field.hex(i).resource();
             player.bank().add(rec, RESOURCES_PORTION);
             field.bank().remove(rec, RESOURCES_PORTION);
-            log(player.name() + " receives resources from initial infrastructure");
         }
 
         if (_current_player == 0) {
@@ -341,6 +309,5 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
     } else {
         _current_player++;
     }
-
     return GameStage::PUT_INITIAL_INFRASTRUCTURES;
 }

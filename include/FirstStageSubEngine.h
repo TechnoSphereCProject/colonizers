@@ -3,7 +3,6 @@
 
 #include <GameStage.h>
 #include <Game.h>
-#include <Logger.h>
 #include <set>
 
 class FirstStageSubEngine

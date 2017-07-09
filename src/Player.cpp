@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "format.h"
 
 using std::logic_error;
 using std::out_of_range;
@@ -26,13 +27,13 @@ Infrastructure &Player::infrastructure(size_t i) const
     } else if ((i -= _cities.size()) < _towns.size()) {
         return *_towns[i];
     }
-    throw out_of_range(name() + "/Infrastructure &Player::infrastructure() OUT OF RANGE");
+    throw out_of_range(fmt::format("{}/Infrastructure &Player::infrastructure() OUT OF RANGE", name()));
 }
 
 Road &Player::road(size_t i) const
 {
     if (i >= _roads.size()) {
-        throw out_of_range(name() + "/Road &Player::road() OUT OF RANGE");
+        throw out_of_range(fmt::format("{}/Road &Player::road() OUT OF RANGE", name()));
     }
     return *_roads[i];
 }
@@ -40,7 +41,7 @@ Road &Player::road(size_t i) const
 Town &Player::town(size_t i) const
 {
     if (i >= _towns.size()) {
-        throw out_of_range(name() + "/Town &Player::town() OUT OF RANGE");
+        throw out_of_range(fmt::format("{}/Town &Player::town() OUT OF RANGE", name()));
     }
     return *_towns[i];
 }
@@ -48,7 +49,7 @@ Town &Player::town(size_t i) const
 City &Player::city(size_t i) const
 {
     if (i >= _cities.size()) {
-        throw out_of_range(name() + "/City &Player::city() OUT OF RANGE");
+        throw out_of_range(fmt::format("{}/City &Player::city() OUT OF RANGE", name()));
     }
     return *_cities[i];
 }

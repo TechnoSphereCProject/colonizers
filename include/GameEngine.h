@@ -7,7 +7,9 @@
 #include <FirstStageSubEngine.h>
 #include <SecondStageSubEngine.h>
 #include <ThirdStageSubEngine.h>
-#include <Logger.h>
+
+//#include "format.h"
+//#include "format.cc"
 
 class GameEngine
 {
@@ -18,7 +20,7 @@ public:
     enum {VICTORY_POINTS = 10};
     enum {POINTS_PER_TOWN = 1, POINTS_PER_CITY = 2};
 
-    GameEngine() {Logger::init_logger();}
+    GameEngine() = default;
     ~GameEngine();
 
     //PREPARATION STAGE

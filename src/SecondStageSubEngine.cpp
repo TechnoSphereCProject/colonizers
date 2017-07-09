@@ -1,17 +1,15 @@
 #include "SecondStageSubEngine.h"
 #include <exception>
 #include <algorithm>
-
-using Logger::log;
+#include "format.h"
 using std::invalid_argument;
 
 void SecondStageSubEngine::exchange_with_field(Resource src, Resource target)
 {
     if (_player.bank().resources(src) < FIELD_EXCHANGE_SRC) {
-        throw invalid_argument("cannot exchange with field: player " + _player.name() +
-            " hasn't enough " + EnumInfo::resource_str(src));
+        throw invalid_argument(fmt::format("cannot exchange with field: player {0} hasn't enough {1}", _player.name(), EnumInfo::resource_str(src)));
     } else if (_game_bank.resources(target) < FIELD_EXCHANGE_TARGET) {
-        throw invalid_argument("cannot exchange with field: game bank hasn't enough " + EnumInfo::resource_str(target));
+        throw invalid_argument(fmt::format("cannot exchange with field: game bank hasn't enough {}", EnumInfo::resource_str(target)));
     }
 
     _player.bank().remove(src, FIELD_EXCHANGE_SRC);
@@ -19,8 +17,6 @@ void SecondStageSubEngine::exchange_with_field(Resource src, Resource target)
 
     _game_bank.add(src, FIELD_EXCHANGE_SRC);
     _player.bank().add(target, FIELD_EXCHANGE_TARGET);
-
-    log(_player.name() + " successfully performed exchange with field");
 }
 
 int SecondStageSubEngine::exchange_players_request(const Player &other_player,
@@ -41,11 +37,10 @@ int SecondStageSubEngine::exchange_players_request(const Player &other_player,
         count_res(src, Resource::WOOD) > _player.bank().resources(Resource::WOOD) ||
         count_res(src, Resource::WOOL) > _player.bank().resources(Resource::WOOL) )
     {
-        throw invalid_argument("cannot register exchange: player " + _player.name() + " hasn't enough resources");
+        throw invalid_argument(fmt::format("cannot register exchange: player {} hasn't enough resources", _player.name()));
     }
 
     _exchange_list.push_back(Exchange(_player, other_player, src, target));
-    log(_player.name() + " requested exchange with " + other_player.name());
     return _exchange_list.size() - 1;
 }
 
@@ -56,8 +51,7 @@ void SecondStageSubEngine::exchange_players_accept(const Player &player, int req
     } else if (performed(request)) {
         throw invalid_argument("cannot accept exchange: this exchange already performed");
     } else if (other(request).name() != player.name()) {
-        throw invalid_argument("cannot accept exchange: request applies to " + _exchange_list[request].other.name() +
-            ", not to " + player.name());
+        throw invalid_argument(fmt::format("cannot accept exchange: request applies to {0}, not to {1}", _exchange_list[request].other.name(), player.name()));
     } else if (count_res(target(request), Resource::CLAY) > player.bank().resources(Resource::CLAY) ||
         count_res(target(request), Resource::GRAIN) > player.bank().resources(Resource::GRAIN) ||
         count_res(target(request), Resource::ORE) > player.bank().resources(Resource::ORE) ||
@@ -70,8 +64,7 @@ void SecondStageSubEngine::exchange_players_accept(const Player &player, int req
         count_res(src(request), Resource::WOOD) > initiator(request).bank().resources(Resource::WOOD) ||
         count_res(src(request), Resource::WOOL) > initiator(request).bank().resources(Resource::WOOL))
     {
-        throw invalid_argument("cannot accept exchange: " + initiator(request).name() + " or "
-            + player.name() +  " hasn't enough resources");
+        throw invalid_argument(fmt::format("cannot accept exchange: {0} or {1} hasn't enough resources", initiator(request).name(), player.name()));
     }
 
     for (Resource i: _exchange_list[request].src) {
@@ -83,7 +76,6 @@ void SecondStageSubEngine::exchange_players_accept(const Player &player, int req
         player.bank().remove(i, 1);
     }
     _exchange_list[request].performed = true;
-    log(player.name() + " accepted " + _player.name() + "'s request");
 }
 
 std::set<int> SecondStageSubEngine::requests() const noexcept

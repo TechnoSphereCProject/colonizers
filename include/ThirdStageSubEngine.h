@@ -3,7 +3,6 @@
 
 #include <Field.h>
 #include <Player.h>
-#include <Logger.h>
 #include <set>
 
 class ThirdStageSubEngine
