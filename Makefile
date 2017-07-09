@@ -5,11 +5,14 @@ CXXFLAGS = -O2 -g -Wall -std=c++11
 
 # Strict compiler options
 CXXFLAGS += -Werror -Wformat-security -Wignored-qualifiers -Winit-self \
-		-Wswitch-default -Wfloat-equal -Wshadow -Wpointer-arith \
+		-Wfloat-equal -Wshadow -Wpointer-arith \
 		-Wtype-limits -Wempty-body -Wlogical-op \
 		-Wmissing-field-initializers -Wctor-dtor-privacy \
 		-Wnon-virtual-dtor -Wstrict-null-sentinel \
 		-Woverloaded-virtual -Wextra -pedantic
+
+# Flag for spdloglib
+CXXFLAGS += -pthread
 
 # Directories with source code
 SRC_DIR = src
@@ -48,8 +51,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $(call src_to_obj, $<) $<
 
 # Alias to make all targets.
-.PHONY: all
+.PHONY: all clean
 all: mkdirs $(BIN_DIR)/solution 
+
+# Alias to clean all 
+clean: 
+	rm -rf $(BUILD_DIR)
 
 # Suppress makefile rebuilding.
 Makefile: ;

@@ -1,6 +1,8 @@
 #include "SecondStageSubEngine.h"
 #include <exception>
 #include <algorithm>
+
+using Logger::log;
 using std::invalid_argument;
 
 void SecondStageSubEngine::exchange_with_field(Resource src, Resource target)
@@ -17,6 +19,8 @@ void SecondStageSubEngine::exchange_with_field(Resource src, Resource target)
 
     _game_bank.add(src, FIELD_EXCHANGE_SRC);
     _player.bank().add(target, FIELD_EXCHANGE_TARGET);
+
+    log(_player.name() + " successfully performed exchange with field");
 }
 
 int SecondStageSubEngine::exchange_players_request(const Player &other_player,
@@ -41,6 +45,7 @@ int SecondStageSubEngine::exchange_players_request(const Player &other_player,
     }
 
     _exchange_list.push_back(Exchange(_player, other_player, src, target));
+    log(_player.name() + " requested exchange with " + other_player.name());
     return _exchange_list.size() - 1;
 }
 
@@ -78,6 +83,7 @@ void SecondStageSubEngine::exchange_players_accept(const Player &player, int req
         player.bank().remove(i, 1);
     }
     _exchange_list[request].performed = true;
+    log(player.name() + " accepted " + _player.name() + "'s request");
 }
 
 std::set<int> SecondStageSubEngine::requests() const noexcept

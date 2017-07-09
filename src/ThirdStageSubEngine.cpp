@@ -1,5 +1,7 @@
 #include "ThirdStageSubEngine.h"
 #include <exception>
+
+using Logger::log;
 using std::invalid_argument;
 
 const std::map<Resource, size_t>
@@ -43,6 +45,7 @@ ThirdStageSubEngine::ThirdStageSubEngine(Field &field, const Player &player)
 
         }
     }
+    log("successfully created data structure with valid infrastructure spots");
 }
 
 void ThirdStageSubEngine::build_road(Road &road, Coord xy, RoadSide road_side)
@@ -65,6 +68,7 @@ void ThirdStageSubEngine::build_road(Road &road, Coord xy, RoadSide road_side)
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
     }
+    log(_player.name() + " successfully built road " + road.name());
 }
 
 void ThirdStageSubEngine::build_town(Town &town, Coord xy, CrossCorner cross_corner)
@@ -87,6 +91,7 @@ void ThirdStageSubEngine::build_town(Town &town, Coord xy, CrossCorner cross_cor
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
     }
+    log(_player.name() + " successfully built town " + town.name());
 }
 
 void ThirdStageSubEngine::build_city(City &city, Coord xy, CrossCorner cross_corner)
@@ -109,6 +114,7 @@ void ThirdStageSubEngine::build_city(City &city, Coord xy, CrossCorner cross_cor
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
     }
+    log(_player.name() + " successfully built city " + city.name());
 }
 
 bool ThirdStageSubEngine::enough_resources(const std::map<Resource, size_t> &resources_per_infrastructure)
