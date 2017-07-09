@@ -1,17 +1,68 @@
-// SIMPLE TEST
-
 #include <iostream>
+#include <exception>
 
 #include <GameEngine.h>
 
+#include "format.h"
+//#include "format.cc"
+
 using namespace std;
 
-void infinity_res_cheat(const Player &p) {
-    p.bank().add(Resource::CLAY, (size_t)-90);
-    p.bank().add(Resource::GRAIN, (size_t)-90);
-    p.bank().add(Resource::ORE, (size_t)-90);
-    p.bank().add(Resource::WOOD, (size_t)-90);
-    p.bank().add(Resource::WOOL, (size_t)-90);
+void show_res_num(const Game &g, size_t num_player) {
+    fmt::print("bank res = {}\n", g.field().bank().resources());
+    fmt::print("player res = {}\n", g.player(num_player).bank().resources());
+}
+
+void show_res_full(const string &name, const ResourcesHolder &bank) {
+    fmt::print("{}'s resources = ", name);
+    fmt::print("{0} ({1})", EnumInfo::resource_str(Resource::CLAY), bank.resources(Resource::CLAY));
+    fmt::print("{0} ({1})", EnumInfo::resource_str(Resource::GRAIN), bank.resources(Resource::GRAIN));
+    fmt::print("{0} ({1})", EnumInfo::resource_str(Resource::ORE), bank.resources(Resource::ORE));
+    fmt::print("{0} ({1})", EnumInfo::resource_str(Resource::WOOD), bank.resources(Resource::WOOD));
+    fmt::print("{0} ({1})\n", EnumInfo::resource_str(Resource::WOOL), bank.resources(Resource::WOOL));
+}
+
+void show_res_all(const Game &g) {
+    for (size_t i = 0; i < g.num_players(); i++) {
+        show_res_full(g.player(i).name(), g.player(i).bank());
+    }
+    show_res_full("bank", g.field().bank());
+}
+
+void list_inf(const Game &g) {
+    for (size_t i = 0; i < g.num_players(); i++) {
+        for (size_t j = 0; j < g.player(i).num_roads(); j++) {
+            fmt::print("player {0}  road {1}\n", g.player(i).name(), g.player(i).road(j).name());
+        }
+        cout << endl;
+        for (size_t j = 0; j < g.player(i).num_towns(); j++) {
+            fmt::print("player {0}  town {1}\n", g.player(i).name(), g.player(i).town(j).name());
+        }
+        cout << endl;
+        for (size_t j = 0; j < g.player(i).num_cities(); j++) {
+            fmt::print("player {0}  city {1}\n", g.player(i).name(), g.player(i).city(j).name());
+        }
+        cout << endl;
+    }
+}
+
+void spots(ThirdStageSubEngine &ts) {
+    auto r = ts.valid_road_spots();
+    auto t = ts.valid_town_spots();
+    auto c = ts.valid_city_spots();
+    fmt::print("road spots:\n");
+    for (auto &i: r) {
+        cout << i.first.str() << ' ' << EnumInfo::road_side_str(i.second) << endl;
+    }
+    fmt::print("town spots:\n");
+    for (auto &i: t) {
+        cout << i.first.str() << ' ' << EnumInfo::cross_corner_str(i.second) << endl;
+    }
+
+    fmt::print("city spots:\n");
+    for (auto &i: c) {
+        cout << i.first.str() << ' ' << EnumInfo::cross_corner_str(i.second) << endl;
+    }
 }
 
 int main()
@@ -19,13 +70,9 @@ int main()
     try {
         GameEngine g;
 
-        g.join_player("excess");
-        g.join_player("ya tut mimo");
         g.join_player("a");
         g.join_player("b");
         g.join_player("c");
-        g.unjoin_player("ya tut mimo");
-        g.unjoin_player("excess");
 
         g.start_game();
 
@@ -50,6 +97,8 @@ int main()
             }
         }
 
+        //g.put_initial_infrastructure("a", "ata", Coord(0,-2), CrossCorner::BOTTOM, "ara", Coord(0,-3), RoadSide::RIGHT);
+        //g.put_initial_infrastructure("b", "bta", Coord(0,0), CrossCorner::TOP, "bra", Coord(0,0), RoadSide::UP);
         for (char c = 'a', i =-1,j=-1; c < 'd'; c++,i++,j++) {
             string player = "0", road = "0ra", town = "0ta";
             road[0] = town[0] = c;
@@ -66,14 +115,20 @@ int main()
         g.make_dice("a", 11);
         g.end_exchanges("a");
 
-        for(uint i = 0; i < g.game().num_players(); ++i)
-            infinity_res_cheat(g.game().player(i));
+
+        g.game().player(0).bank().add(Resource::CLAY, 90);
+        g.game().player(0).bank().add(Resource::GRAIN, 90);
+        g.game().player(0).bank().add(Resource::ORE, 90);
+        g.game().player(0).bank().add(Resource::WOOD, 90);
+        g.game().player(0).bank().add(Resource::WOOL, 90);
 
         g.build_road("a", "ard", Coord(-2,0), RoadSide::UP);
         g.build_road("a", "arc", Coord(-3,1), RoadSide::DOWN);
         g.build_road("a", "are", Coord(-3,0), RoadSide::RIGHT);
         g.build_road("a", "arf", Coord(-2,-1), RoadSide::UP);
+        show_res_num(g.game(),0);
         g.build_road("a", "arg", Coord(-2,0), RoadSide::DOWN);
+        show_res_num(g.game(),0);
 
         g.build_road("a", "arh", Coord(-2,1), RoadSide::DOWN);
         g.build_road("a", "ark", Coord(-1,0), RoadSide::UP);
@@ -93,23 +148,19 @@ int main()
         g.build_town("a", "ata", Coord(-1,-2), CrossCorner::TOP);
         g.build_town("a", "atb", Coord(-3,2), CrossCorner::BOTTOM);
 
-        g.next_player("a");
-
-        g.make_dice("b", 2);
-        g.exchange_players_request("b", "c", {Resource::CLAY}, {Resource::GRAIN});
-        g.exchange_players_accept("c", 0);
-        g.end_exchanges("b");
-        g.next_player("b");
-
-        g.make_dice("c", 3);
-        g.end_exchanges("c");
-        g.next_player("c");
-
-        g.make_dice("a", 10);
-        g.end_exchanges("a");
         g.build_city("a", "aca", Coord(-3,2),CrossCorner::BOTTOM);
 
+        //spots(g.ts());
+
+        fmt::print("score = {}", g.score("a"));
+
+        fmt::print("\n{}\n", EnumInfo::game_stage_str(g.stage()));
+        fmt::print("OK!!!\n");
     } catch (exception &e) {
-        cout << "EXCEPTION WAAAT: " << e.what() << endl;
+        fmt::print("EXCEPTION WAAAT: {}", e.what());
+    } catch (size_t i) {
+        fmt::print("EXCEPTION INT = {}", i);
     }
+    
+    fmt::print("SUCCESS!!!\n");
 }

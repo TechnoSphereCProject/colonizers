@@ -4,22 +4,20 @@
 #include <cstdlib>
 #include <ctime>
 
-using Logger::log;
+#include "format.h"
+#include "format.cc"
+
 using std::invalid_argument;
 
 GameStage FirstStageSubEngine::make_dice(size_t dice)
 {
     if ((dice < DICE_LOWER_BOUND) || (dice > DICE_HIGHER_BOUND)) {
-        std::stringstream ss;
-        ss << "cannot make dice: possible from " << DICE_LOWER_BOUND << " up to " << DICE_HIGHER_BOUND;
-        ss << " your dice is " << dice;
-        throw invalid_argument(ss.str());
+        throw invalid_argument(fmt::format("cannot make dice: possible from {0} up to {1}", DICE_LOWER_BOUND, DICE_HIGHER_BOUND));
+        
     } else if (dice == ROBBERS_MOVE) {
-        log("robbers dice: starting robbing procedure");
         init_drop_list();
         return _drop_list.empty() ? GameStage::STAGE1_MOVE_ROBBER : GameStage::STAGE1_DROP_RESOURCES;
     } else {
-        log("regular dice: dealing resources");
         deal_resources(dice);
         return GameStage::STAGE2;
     }
@@ -28,20 +26,16 @@ GameStage FirstStageSubEngine::make_dice(size_t dice)
 GameStage FirstStageSubEngine::drop_resource(const Player &player, Resource res)
 {
     if (player.bank().resources(res) < SINGLE_DROP) {
-        throw invalid_argument("cannot drop resource: player " + player.name() + " hasn't enough " +
-            EnumInfo::resource_str(res) + " to drop");
+        throw invalid_argument(fmt::format("cannot drop resource: player {0} hasn't enough {1} to drop", player.name(), EnumInfo::resource_str(res)));
     } else if (_drop_list.count(&player) == 0) {
-        throw invalid_argument("cannot drop resource: player " + player.name() + " doesn't have to drop resource");
+        throw invalid_argument(fmt::format("cannot drop resource: player {0} doesn't have to drop resource", player.name()));
     } else if (_drop_list.find(&player)->second == 0) {
-        throw invalid_argument("cannot drop resource: player " + player.name() +
-            " already dropped required resources count");
+        throw invalid_argument(fmt::format("cannot drop resource: player {0} already dropped required resources count", player.name()));
     }
 
     player.bank().remove(res, SINGLE_DROP);
     _drop_list[&player] -= SINGLE_DROP;
     _game.field().bank().add(res, SINGLE_DROP);
-
-    log("player " + player.name() + " performed a single drop");
 
     for (auto it = _drop_list.cbegin(); it != _drop_list.cend(); it++) {
         if (it->second != 0) {
@@ -56,12 +50,10 @@ GameStage FirstStageSubEngine::move_robber(Coord xy) const
     if (_game.field().has_robber() && (_game.field().robber() == xy)) {
         throw invalid_argument("cannot move robber: robber has to be moved to other place");
     } else if (!_game.field().has_hex(xy)) {
-        throw invalid_argument("cannot move robber: spot " + xy.str() + " is out of field");
+        throw invalid_argument(fmt::format("cannot move robber: spot {} is out of field", xy.str()));
     }
 
     _game.field().set_robber(xy);
-
-    log("moving robber to " + xy.str());
 
     auto hex_corners = this->hex_corners(_game.field().robber());
     for (auto i: hex_corners) {
@@ -88,7 +80,7 @@ GameStage FirstStageSubEngine::rob(const Player &player, const Player &victim) c
     }
 
     if (!has_locality_near_robber) {
-        throw invalid_argument("cannot rob: victim player " + victim.name() + " hasn't any locality near robber");
+        throw invalid_argument(fmt::format("cannot rob: victim player {} hasn't any locality near robber", victim.name()));
     } else if (victim.bank().resources() != 0) {
         std::vector<Resource> res = {Resource::CLAY, Resource::GRAIN, Resource::ORE, Resource::WOOD, Resource::WOOL};
         Resource rob_res;
@@ -100,8 +92,6 @@ GameStage FirstStageSubEngine::rob(const Player &player, const Player &victim) c
 
         player.bank().add(rob_res, SINGLE_ROBBERY);
         victim.bank().remove(rob_res, SINGLE_ROBBERY);
-
-        log(player.name() + " robbed " + victim.name());
     }
     return GameStage::STAGE2;
 }

@@ -4,7 +4,6 @@
 #include <vector>
 #include <Game.h>
 #include <Exchange.h>
-#include <Logger.h>
 
 class SecondStageSubEngine
 {
