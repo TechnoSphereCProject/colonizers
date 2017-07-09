@@ -2,6 +2,7 @@
 #include "GameEngine.h"
 #include "format.h"
 using std::invalid_argument;
+using Logger::log;
 
 GameEngine::~GameEngine()
 {
@@ -43,6 +44,7 @@ void GameEngine::start_game()
     _preparation_stage->init_classical_field();
 
     _game_stage = GameStage::INFRASTRUCTURES_REGISTRATION;
+    log("starting game");
 }
 
 void GameEngine::register_road(const std::string &player, const std::string &name)
@@ -111,6 +113,7 @@ void GameEngine::put_initial_infrastructure(const std::string &player,
     if (_game_stage == GameStage::STAGE1_DICE) {
         _first_stage = new FirstStageSubEngine(*_game);
         delete _preparation_stage;
+        log("moving onto stage 1");
         _preparation_stage = nullptr;
     }
 }
@@ -134,6 +137,7 @@ void GameEngine::make_dice(const std::string &player, size_t dice)
         _second_stage = new SecondStageSubEngine(_game->field().bank(), current_player());
         delete _first_stage;
         _first_stage = nullptr;
+        log("moving onto stage 2");
     }
 }
 
@@ -166,6 +170,7 @@ void GameEngine::move_robber(const std::string &player, Coord xy)
         _second_stage = new SecondStageSubEngine(_game->field().bank(), current_player());
         delete _first_stage;
         _first_stage = nullptr;
+        log("moving onto stage 2");
     }
 }
 
@@ -188,6 +193,7 @@ void GameEngine::rob(const std::string &player, const std::string &victim)
     _second_stage = new SecondStageSubEngine(_game->field().bank(), current_player());
     delete _first_stage;
     _first_stage = nullptr;
+    log("moving onto stage 2");
 }
 
 //---------------------------------------------------------------------
@@ -321,6 +327,7 @@ void GameEngine::end_exchanges(const std::string &player)
     _game_stage = GameStage::STAGE3;
     delete _second_stage;
     _second_stage = nullptr;
+    log("moving onto stage 3");
 }
 
 //---------------------------------------------------------------------
@@ -352,6 +359,7 @@ void GameEngine::build_town(const std::string &player, const std::string &town, 
         delete _third_stage;
         _third_stage = nullptr;
         _game_stage = GameStage::FINAL_STAGE;
+        log("game over");
     }
 }
 
@@ -369,6 +377,7 @@ void GameEngine::build_city(const std::string &player, const std::string &city, 
         delete _third_stage;
         _third_stage = nullptr;
         _game_stage = GameStage::FINAL_STAGE;
+        log("game over");
     }
 }
 
@@ -417,6 +426,7 @@ void GameEngine::next_player(const std::string &player)
     _game_stage = GameStage::STAGE1_DICE;
 
     _current_player = (_current_player + 1) % game().num_players();
+    log(fmt::format("switching to the next player: {}", current_player().name()));
 }
 
 //---------------------------------------------------------------------

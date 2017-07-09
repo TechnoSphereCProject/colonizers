@@ -1,6 +1,8 @@
 #include "PreparationEngine.h"
 #include <algorithm>
 #include "format.h"
+using Logger::log;
+using Logger::warnif;
 using std::invalid_argument;
 
 bool PreparationEngine::player_is_waiting(const string &name) const noexcept
@@ -14,6 +16,8 @@ void PreparationEngine::join_player(const string &player)
         throw invalid_argument(fmt::format("cannot join player \"{}\": player with this name is already waiting for a game", player));
     }
     _waiting_queue.push_back(player);
+    log(fmt::format("player {} joined the game", player));
+    warnif(_waiting_queue.size() > NUM_PLAYERS_HIGHER_BOUND, "number of players exceeds game limit");
 }
 
 void PreparationEngine::unjoin_player(const string &player)
@@ -22,6 +26,7 @@ void PreparationEngine::unjoin_player(const string &player)
         throw invalid_argument(fmt::format("cannot unjoin player \"{}\": player with this name doesn't exist", player));
     }
     _waiting_queue.remove(player);
+    log(fmt::format("player {} left the game", player));
 }
 
 bool PreparationEngine::has_road(const Player &player, const string &name) const noexcept
@@ -63,6 +68,7 @@ GameStage PreparationEngine::register_road(Player &player, const string &name)
     }
 
     player.add_road(name);
+    log(fmt::format("{0} registered road {1}", player.name(), name));
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
@@ -75,6 +81,7 @@ GameStage PreparationEngine::register_town(Player &player, const string &name)
     }
 
     player.add_town(name);
+    log(fmt::format("{0} registered town {1}", player.name(), name));
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
@@ -87,6 +94,7 @@ GameStage PreparationEngine::register_city(Player &player, const string &name)
     }
 
     player.add_city(name);
+    log(fmt::format("{0} registered city {1}", player.name(), name));
     return registration_is_over() ? GameStage::PUT_INITIAL_INFRASTRUCTURES : GameStage::INFRASTRUCTURES_REGISTRATION;
 }
 
@@ -100,6 +108,7 @@ void PreparationEngine::fix_players()
         _game.add_player(i);
     }
     _waiting_queue.clear();
+    log("registration is over");
 }
 
 void PreparationEngine::init_bank() const
@@ -111,6 +120,7 @@ void PreparationEngine::init_bank() const
     bank.add(Resource::ORE, RESOURCES_INITIAL_COUNT);
     bank.add(Resource::WOOD, RESOURCES_INITIAL_COUNT);
     bank.add(Resource::WOOL, RESOURCES_INITIAL_COUNT);
+    log("game bank initialized");
 }
 
 void PreparationEngine::init_classical_field() const
@@ -189,6 +199,8 @@ void PreparationEngine::init_classical_field() const
     field.hex(Coord(2, -2)).set_resource(Resource::ORE);
 
     field.set_robber(Coord(0, 0));
+    
+    log("classical field initialized");
 }
 
 bool PreparationEngine::registration_is_over() const noexcept
@@ -272,8 +284,10 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
 
     field.link_locality(*town_ptr, town_coord, town_corner);
     field.link_road(*road_ptr, road_coord, road_side);
+    log(fmt::format("player {0} successfully put road {1} and town {2}", player.name(), road, town));
 
     if (!_reverse && (_current_player == _game.num_players() - 1)) {
+        log("straight arrangement is over, starting reverse");
         _reverse = true;
     } else if (_reverse) {
         std::vector<Coord> hex_with_resource;
@@ -299,6 +313,7 @@ GameStage PreparationEngine::put_initial_infrastructure(const Player &player,
             Resource rec = field.hex(i).resource();
             player.bank().add(rec, RESOURCES_PORTION);
             field.bank().remove(rec, RESOURCES_PORTION);
+            log(fmt::format("{} receives resources from initial infrastructure", player.name()));
         }
 
         if (_current_player == 0) {

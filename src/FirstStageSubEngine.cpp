@@ -5,7 +5,9 @@
 #include <ctime>
 
 #include "format.h"
-#include "format.cc"
+//#include "format.cc"
+
+using Logger::log;
 
 using std::invalid_argument;
 
@@ -15,9 +17,11 @@ GameStage FirstStageSubEngine::make_dice(size_t dice)
         throw invalid_argument(fmt::format("cannot make dice: possible from {0} up to {1}", DICE_LOWER_BOUND, DICE_HIGHER_BOUND));
         
     } else if (dice == ROBBERS_MOVE) {
+        log("robbers dice: starting robbing procedure");
         init_drop_list();
         return _drop_list.empty() ? GameStage::STAGE1_MOVE_ROBBER : GameStage::STAGE1_DROP_RESOURCES;
     } else {
+        log("regular dice: dealing resources");
         deal_resources(dice);
         return GameStage::STAGE2;
     }
@@ -54,6 +58,7 @@ GameStage FirstStageSubEngine::move_robber(Coord xy) const
     }
 
     _game.field().set_robber(xy);
+    log(fmt::format("moving robber to {}", xy.str()));
 
     auto hex_corners = this->hex_corners(_game.field().robber());
     for (auto i: hex_corners) {
@@ -92,6 +97,7 @@ GameStage FirstStageSubEngine::rob(const Player &player, const Player &victim) c
 
         player.bank().add(rob_res, SINGLE_ROBBERY);
         victim.bank().remove(rob_res, SINGLE_ROBBERY);
+        log(fmt::format("{0} robbed {1}", player.name(), victim.name()));
     }
     return GameStage::STAGE2;
 }

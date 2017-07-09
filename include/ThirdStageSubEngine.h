@@ -4,6 +4,7 @@
 #include <Field.h>
 #include <Player.h>
 #include <set>
+#include <Logger.h>
 
 class ThirdStageSubEngine
 {

@@ -1,6 +1,8 @@
 #include "Hex.h"
 #include <sstream>
 #include "format.h"
+#include "format.cc"
+
 using std::logic_error;
 
 void Hex::set_number(size_t n)
