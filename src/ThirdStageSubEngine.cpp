@@ -44,8 +44,8 @@ ThirdStageSubEngine::ThirdStageSubEngine(Field &field, const Player &player)
         } catch (std::logic_error) {
 
         }
-        log("successfully created data structure with valid infrastructure spots");
     }
+    log("successfully created data structure with valid infrastructure spots");
 }
 
 void ThirdStageSubEngine::build_road(Road &road, Coord xy, RoadSide road_side)
