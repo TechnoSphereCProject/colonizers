@@ -9,6 +9,9 @@
 #include <ThirdStageSubEngine.h>
 #include <Logger.h>
 
+//#include "format.h"
+//#include "format.cc"
+
 class GameEngine
 {
     GameEngine(const GameEngine &) = delete;

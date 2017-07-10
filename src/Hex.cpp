@@ -1,14 +1,14 @@
 #include "Hex.h"
 #include <sstream>
+#include "format.h"
+#include "format.cc"
+
 using std::logic_error;
 
 void Hex::set_number(size_t n)
 {
     if (_has_number) {
-        std::stringstream err_msg;
-        err_msg << "cannot set number " << n;
-        err_msg << ": the number on hex is " << _number;
-        throw logic_error(err_msg.str());
+        throw logic_error(fmt::format("cannot set number {0} : the number on hex is {1}", n, _number));
     }
     _has_number = true;
     _number = n;
@@ -34,9 +34,7 @@ size_t Hex::number() const
 void Hex::set_resource(Resource res)
 {
     if (_has_resource) {
-        std::string err_msg = "cannot set resource " + EnumInfo::resource_str(res) +
-            " : the resource on hex is " + EnumInfo::resource_str(_resource);
-        throw logic_error(err_msg);
+        throw logic_error(fmt::format("cannot set resource {0} : the resource on hex is {1}", EnumInfo::resource_str(res), EnumInfo::resource_str(_resource)));
     }
     _has_resource = true;
     _resource = res;

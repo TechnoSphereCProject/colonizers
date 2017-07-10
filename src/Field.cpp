@@ -1,4 +1,5 @@
 #include "Field.h"
+#include "format.h"
 
 using std::logic_error;
 using std::out_of_range;
@@ -15,7 +16,7 @@ Field::~Field()
 Hex &Field::put_hex(Coord xy)
 {
     if (has_hex(xy)) {
-        throw logic_error("cannot put hex at " + xy.str() + " : spot is occupied");
+        throw logic_error(fmt::format("cannot put hex at {} : spot is occupied", xy.str()));
     }
     Hex *p = new Hex();
     _hex_map.insert( {xy, p} );
@@ -26,7 +27,7 @@ void Field::remove_hex(Coord xy)
 {
     auto hex_it = _hex_map.find(xy);
     if (hex_it == _hex_map.end()) {
-        throw logic_error("cannot remove hex from " + xy.str() + " : there is no hex");
+        throw logic_error(fmt::format("cannot remove hex from {}: there is no hex", xy.str()));
     }
     delete hex_it->second;
     _hex_map.erase(hex_it);
@@ -35,7 +36,7 @@ void Field::remove_hex(Coord xy)
 Hex &Field::hex(Coord xy) const
 {
     if (!has_hex(xy)) {
-        throw logic_error("cannot return hex at " + xy.str() + " : there is no hex");
+        throw logic_error(fmt::format("cannot return hex at {}: there is no hex", xy.str()));
     }
     return *_hex_map.find(xy)->second;
 }
@@ -66,12 +67,10 @@ void Field::link_road(Road &r, Coord xy, RoadSide rdsd)
 {
     if (linked(r)) {
         auto road_coord = coord(r);
-        throw logic_error("cannot link road " + r.name() + " : road is already linked to " +
-            road_coord.first.str() + " " + EnumInfo::road_side_str(road_coord.second));
+        throw logic_error(fmt::format("cannot link road {0} : road is already linked to {1} {2}", r.name(), road_coord.first.str(), EnumInfo::road_side_str(road_coord.second)));
     }
     if (has_road(xy, rdsd)) {
-        throw logic_error("cannot link road " + r.name() + " to " + xy.str() + " " + EnumInfo::road_side_str(rdsd) +
-            " : spot is occupied");
+        throw logic_error(fmt::format("cannot link road {0} to {1} {2}: spot is occupied", r.name(), xy.str(), EnumInfo::road_side_str(rdsd)));
     }
     _road_map.insert( {{xy, rdsd}, &r} );
 }
@@ -79,8 +78,7 @@ void Field::link_road(Road &r, Coord xy, RoadSide rdsd)
 void Field::unlink_road(Coord xy, RoadSide rdsd)
 {
     if (!has_road(xy, rdsd)) {
-        throw logic_error("cannot unlink road from " + xy.str() + " " + EnumInfo::road_side_str(rdsd) +
-            " : there is no road");
+        throw logic_error(fmt::format("cannot unlink road from {0} {1} : there is no road", xy.str(), EnumInfo::road_side_str(rdsd)));
     }
     _road_map.erase( {xy, rdsd} );
 }
@@ -93,14 +91,13 @@ void Field::unlink_road(Road &r)
             return;
         }
     }
-    throw logic_error("cannot unlink road " + r.name() + " : no such road on the map");
+    throw logic_error(fmt::format("cannot unlink road {} : no such road on the map", r.name()));
 }
 
 Road &Field::road(Coord xy, RoadSide rdsd) const
 {
     if (!has_road(xy, rdsd)) {
-        throw logic_error("cannot return road at " + xy.str() + " " + EnumInfo::road_side_str(rdsd) +
-            " : there is no road");
+        throw logic_error(fmt::format("cannot return road at {0} {1} : there is no road", xy.str(), EnumInfo::road_side_str(rdsd)));
     }
     return *_road_map.find( {xy, rdsd} )->second;
 }
@@ -112,19 +109,17 @@ pair<Coord, RoadSide> Field::coord(Road &r) const
             return i->first;
         }
     }
-    throw logic_error("cannot find road " + r.name() + " on the map");
+    throw logic_error(fmt::format("cannot find road {} on the map", r.name()));
 }
 
 void Field::link_locality(Locality &loc, Coord xy, CrossCorner cr_corn)
 {
     if (linked(loc)) {
         auto loc_coord = coord(loc);
-        throw logic_error("cannot link locality " + loc.name() + " : locality is already linked to " +
-            loc_coord.first.str() + " " + EnumInfo::cross_corner_str(loc_coord.second));
+        throw logic_error(fmt::format("cannot link locality {0} : locality is already linked to {1} {2}", loc.name(), loc_coord.first.str(), EnumInfo::cross_corner_str(loc_coord.second)));
     }
     if (has_locality(xy, cr_corn)) {
-        throw logic_error("cannot link locality " + loc.name() + " to " + xy.str() + " " + EnumInfo::cross_corner_str(cr_corn) +
-            " : spot is occupied");
+        throw logic_error(fmt::format("cannot link locality {0} to {1} {2} : spot is occupied", loc.name(), xy.str(), EnumInfo::cross_corner_str(cr_corn)));
     }
     _locality_map.insert( {{xy, cr_corn}, &loc} );
 }
@@ -132,8 +127,7 @@ void Field::link_locality(Locality &loc, Coord xy, CrossCorner cr_corn)
 void Field::unlink_locality(Coord xy, CrossCorner cr_corn)
 {
     if (!has_locality(xy, cr_corn)) {
-        throw logic_error("cannot unlink locality from " + xy.str() + " " + EnumInfo::cross_corner_str(cr_corn) +
-            " : there is no locality");
+        throw logic_error(fmt::format("cannot unlink locality from {0} {1} : there is no locality", xy.str(), EnumInfo::cross_corner_str(cr_corn)));
     }
     _locality_map.erase( {xy, cr_corn} );
 }
@@ -146,14 +140,13 @@ void Field::unlink_locality(Locality &loc)
             return;
         }
     }
-    throw logic_error("cannot unlink locality " + loc.name() + " : no such locality on the map");
+    throw logic_error(fmt::format("cannot unlink locality {} : no such locality on the map", loc.name()));
 }
 
 Locality &Field::locality(Coord xy, CrossCorner cr_corn) const
 {
     if (!has_locality(xy, cr_corn)) {
-        throw logic_error("cannot return locality at " + xy.str() + " " + EnumInfo::cross_corner_str(cr_corn) +
-            " : there is no locality");
+        throw logic_error(fmt::format("cannot return locality at {0} {1} : there is no locality", xy.str(), EnumInfo::cross_corner_str(cr_corn)));
     }
     return *_locality_map.find( {xy, cr_corn} )->second;
 }
@@ -165,7 +158,7 @@ pair<Coord, CrossCorner> Field::coord(Locality &loc) const
             return i->first;
         }
     }
-    throw logic_error("cannot find locality " + loc.name() + " on the map");
+    throw logic_error(fmt::format("cannot find locality {} on the map", loc.name()));
 }
 
 bool Field::linked(const Infrastructure &inf) const noexcept

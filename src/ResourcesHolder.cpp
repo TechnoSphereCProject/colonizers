@@ -2,15 +2,13 @@
 
 #include <sstream>
 #include <stdexcept>
+#include "format.h"
 using std::logic_error;
 
 void ResourcesHolder::remove(Resource r, size_t n)
 {
     if (_resources[r] < n) {
-        std::stringstream err_msg;
-        err_msg << "cannot remove " << n << ' ' << EnumInfo::resource_str(r);
-        err_msg << ": there is only "<< _resources[r];
-        throw logic_error(err_msg.str());
+        throw logic_error(fmt::format("cannot remove {0} {1} : there is only {2}", n, EnumInfo::resource_str(r), _resources[r]));
     }
     _resources[r] -= n;
 }

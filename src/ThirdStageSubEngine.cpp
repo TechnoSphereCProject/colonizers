@@ -1,6 +1,6 @@
 #include "ThirdStageSubEngine.h"
 #include <exception>
-
+#include "format.h"
 using Logger::log;
 using std::invalid_argument;
 
@@ -44,19 +44,18 @@ ThirdStageSubEngine::ThirdStageSubEngine(Field &field, const Player &player)
         } catch (std::logic_error) {
 
         }
+        log("successfully created data structure with valid infrastructure spots");
     }
-    log("successfully created data structure with valid infrastructure spots");
 }
 
 void ThirdStageSubEngine::build_road(Road &road, Coord xy, RoadSide road_side)
 {
     if (_field.linked(road)) {
-        throw invalid_argument("cannot build road: " + _player.name() + "'s road " + road.name() + " is already built");
+        throw invalid_argument(fmt::format("cannot build road: {0}'s road {1} is already built", _player.name(), road.name()));
     } else if (_road_spots.count( {xy, road_side} ) == 0) {
-        throw invalid_argument("cannot build road: spot " + xy.str() +
-            " " + EnumInfo::road_side_str(road_side) + " is incorrect");
+        throw invalid_argument(fmt::format("cannot build road: spot {0} {1} is incorrect", xy.str(), EnumInfo::road_side_str(road_side)));
     } else if (! enough_resources(resources_per_road)) {
-        throw invalid_argument("cannot build road: player " + _player.name() + " hasn't enough resources");
+        throw invalid_argument(fmt::format("cannot build road: player {} hasn't enough resources", _player.name()));
     }
 
     _field.link_road(road, xy, road_side);
@@ -67,19 +66,18 @@ void ThirdStageSubEngine::build_road(Road &road, Coord xy, RoadSide road_side)
     for (auto &i: resources_per_road) {
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
+        log(fmt::format("{0} successfully built road {1}", _player.name(), road.name()));
     }
-    log(_player.name() + " successfully built road " + road.name());
 }
 
 void ThirdStageSubEngine::build_town(Town &town, Coord xy, CrossCorner cross_corner)
 {
     if (_field.linked(town)) {
-        throw invalid_argument("cannot build town: " + _player.name() + "'s town " + town.name() + " is already built");
+        throw invalid_argument(fmt::format("cannot build town: {0}'s town {1} is already built", _player.name(), town.name()));
     } else if (_town_spots.count( {xy, cross_corner} ) == 0) {
-        throw invalid_argument("cannot build town: spot " + xy.str() +
-            " " + EnumInfo::cross_corner_str(cross_corner) + " is incorrect");
+        throw invalid_argument(fmt::format("cannot build town: spot {0} {1} is incorrect", xy.str(), EnumInfo::cross_corner_str(cross_corner)));
     } else if (! enough_resources(resources_per_town)) {
-        throw invalid_argument("cannot build town: player " + _player.name() + " hasn't enough resources");
+        throw invalid_argument(fmt::format("cannot build town: player {} hasn't enough resources", _player.name()));
     }
 
     _field.link_locality(town, xy, cross_corner);
@@ -90,19 +88,18 @@ void ThirdStageSubEngine::build_town(Town &town, Coord xy, CrossCorner cross_cor
     for (auto &i: resources_per_town) {
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
+        log(fmt::format("{0} successfully built town {1}", _player.name(), town.name()));
     }
-    log(_player.name() + " successfully built town " + town.name());
 }
 
 void ThirdStageSubEngine::build_city(City &city, Coord xy, CrossCorner cross_corner)
 {
     if (_field.linked(city)) {
-        throw invalid_argument("cannot build city: " + _player.name() + "'s city " + city.name() + " is already built");
+        throw invalid_argument(fmt::format("cannot build city: {0}'s city {1} is already built", _player.name(), city.name()));
     } else if (_city_spots.count( {xy, cross_corner} ) == 0) {
-        throw invalid_argument("cannot build city: spot " + xy.str() +
-            " " + EnumInfo::cross_corner_str(cross_corner) + " is incorrect");
+        throw invalid_argument(fmt::format("cannot build city: spot {0} {1} is incorrect", xy.str(), EnumInfo::cross_corner_str(cross_corner)));
     } else if (! enough_resources(resources_per_city)) {
-        throw invalid_argument("cannot build city: player " + _player.name() + " hasn't enough resources");
+        throw invalid_argument(fmt::format("cannot build city: player {} hasn't enough resources", _player.name()));
     }
 
     _field.unlink_locality(xy, cross_corner);
@@ -113,8 +110,8 @@ void ThirdStageSubEngine::build_city(City &city, Coord xy, CrossCorner cross_cor
     for (auto &i: resources_per_city) {
         _player.bank().remove(i.first, i.second);
         _field.bank().add(i.first, i.second);
+        log(fmt::format("{0} successfully built city {1}", _player.name(), city.name()));
     }
-    log(_player.name() + " successfully built city " + city.name());
 }
 
 bool ThirdStageSubEngine::enough_resources(const std::map<Resource, size_t> &resources_per_infrastructure)
@@ -213,7 +210,7 @@ Road &ThirdStageSubEngine::road(const std::string &name) const
             return _player.road(i);
         }
     }
-    throw invalid_argument("cannot build: player " + _player.name() + " hasn't road \"" + name + '\"');
+    throw invalid_argument(fmt::format("cannot build: player {0} hasn't road \"{1}\"", _player.name(), name));
 }
 
 Town &ThirdStageSubEngine::town(const std::string &name) const
@@ -223,7 +220,7 @@ Town &ThirdStageSubEngine::town(const std::string &name) const
             return _player.town(i);
         }
     }
-    throw invalid_argument("cannot build: player " + _player.name() + " hasn't town \"" + name + '\"');
+    throw invalid_argument(fmt::format("cannot build: player {0} hasn't town \"{1}\"", _player.name(), name));
 }
 
 City &ThirdStageSubEngine::city(const std::string &name) const
@@ -233,7 +230,7 @@ City &ThirdStageSubEngine::city(const std::string &name) const
             return _player.city(i);
         }
     }
-    throw invalid_argument("cannot build: player " + _player.name() + " hasn't city \"" + name + '\"');
+    throw invalid_argument(fmt::format("cannot build: player {0} hasn't city \"{1}\"", _player.name(), name));
 }
 
 void ThirdStageSubEngine::_modify_road_spots(Coord used_spot_coord, RoadSide used_spot_road_side) {

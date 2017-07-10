@@ -3,11 +3,9 @@
 
 #include <stdexcept>
 #include <list>
-
 #include <Game.h>
 #include <GameStage.h>
 #include <Logger.h>
-
 using std::string;
 
 class PreparationEngine
