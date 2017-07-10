@@ -7,8 +7,10 @@
 ![][catan cover]
 
 # Используемое ПО
+- ОС: Ubuntu
 - Компилятор: g++
 - UML: [StarUML](http://staruml.io/)
+- библиотеки: [fmtlib](https://github.com/fmtlib/fmt), [spdlog](https://github.com/gabime/spdlog), вшиты в сборку
 
 # Правила игры
 ### Подготовка
